@@ -1,0 +1,47 @@
+:root {
+    --bg-color: #f9fafb;
+    --primary-blue: #0284c7;
+    --celeste: #e0f2fe;
+    --text-dark: #1f2937;
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', sans-serif; }
+body { background-color: var(--bg-color); color: var(--text-dark); line-height: 1.6; }
+
+.header { background-color: var(--primary-blue); color: white; padding: 1rem; text-align: center; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
+.container { max-width: 700px; margin: 2rem auto; padding: 0 1rem; }
+
+/* Estilo del turno en tiempo real dentro del modal */
+.doctor-live-status {
+    background-color: var(--celeste);
+    color: var(--primary-blue);
+    padding: 0.8rem;
+    border-radius: 8px;
+    text-align: center;
+    font-size: 1.1rem;
+    margin: 1rem 0;
+    border: 1px solid #bae6fd;
+}
+#doctor-now-serving { font-size: 1.4rem; font-weight: bold; }
+
+/* Lista de Especialidades */
+.specialty-item { background: white; border: 1px solid #e5e7eb; border-radius: 8px; margin-bottom: 0.5rem; }
+.specialty-header { padding: 1rem; cursor: pointer; font-weight: 600; color: var(--primary-blue); }
+.doctors-list { display: none; list-style: none; background: #fefefe; border-top: 1px solid #e5e7eb; }
+.doctors-list li { padding: 0.8rem 1.5rem; cursor: pointer; border-bottom: 1px solid #f3f4f6; }
+.doctors-list li:hover { background: var(--celeste); }
+
+/* Modal */
+.modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); }
+.modal-content { background: white; margin: 10% auto; padding: 2rem; width: 90%; max-width: 450px; border-radius: 12px; position: relative; }
+.close { position: absolute; top: 10px; right: 20px; font-size: 1.5rem; cursor: pointer; }
+
+.time-slots { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin: 1rem 0; }
+.slot { padding: 0.5rem; border: 1px solid var(--primary-blue); border-radius: 4px; text-align: center; cursor: pointer; }
+.slot.selected { background: var(--primary-blue); color: white; }
+.slot.occupied { background: #f3f4f6; border-color: #d1d5db; color: #9ca3af; cursor: not-allowed; }
+
+.btn-primary { width: 100%; background: var(--primary-blue); color: white; border: none; padding: 1rem; border-radius: 6px; cursor: pointer; }
+.btn-primary:disabled { background: #9ca3af; }
+.result-message { margin-top: 1rem; padding: 1rem; background: #dcfce7; color: #166534; border-radius: 6px; text-align: center; }
+.hidden { display: none; }
