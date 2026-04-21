@@ -69,11 +69,21 @@ document.addEventListener('DOMContentLoaded', () => {
                     </div>
                 `;
 
+// NUEVA LÓGICA: Determinar qué cartel abrir según el doctor
                 li.onclick = () => {
-                    if (!doc.noAvailability) {
-                        openDoctorModal(doc);
+                    if (doc.noAvailability) {
+                        showCustomAlert(
+                            "Sin Disponibilidad", 
+                            "Este profesional se encuentra en licencia o no cuenta con turnos disponibles por el momento."
+                        );
+                    } else if (doc.inPersonOnly) {
+                        showCustomAlert(
+                            "Atención Exclusivamente Presencial", 
+                            "Este profesional no acepta reservas online. Por favor, acércate personalmente para solicitar un turno.",
+                            doc // Le pasamos los datos del doctor para mostrar el piso y consultorio
+                        );
                     } else {
-                        alert("Este profesional no cuenta con turnos disponibles por el momento.");
+                        openDoctorModal(doc);
                     }
                 };
                 ul.appendChild(li);
