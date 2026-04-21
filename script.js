@@ -101,119 +101,75 @@ function generateSlots() {
         const slot = document.createElement('div');
         slot.className = 'slot';
         slot.textContent = h;
-        
-        // Simular turnos ocupados (30% de probabilidad)
-        if (Math.random() < 0.3) {
-            slot.classList.add('occupied');
-        } else {
-            slot.onclick = () => {
-                document.querySelectorAll('.slot').forEach(s => s.classList.remove('selected'));
-                slot.classList.add('selected');
-                document.getElementById('book-btn').disabled = false;
-            };
-        }
-        container.appendChild(slot);
-    });
-}
+        // --- Lógica del Chatbot de Triaje ---
+// Envolvemos el código para que espere a que el botón cargue en la página
+document.addEventListener('DOMContentLoaded', () => {
+    const chatToggle = document.getElementById('chatbot-toggle');
+    const chatWindow = document.getElementById('chatbot-window');
+    const closeChat = document.getElementById('close-chat');
+    const chatInput = document.getElementById('chat-input');
+    const sendChatBtn = document.getElementById('send-chat');
+    const chatMessages = document.getElementById('chat-messages');
 
-// 5. Botones de pedir turno y cerrar
-document.getElementById('book-btn').onclick = () => {
-    const ticket = Math.floor(Math.random() * 15) + 1;
-    const msg = document.getElementById('result-message');
-    msg.innerHTML = `Reserva exitosa. Tu turno es el <strong>#${ticket}</strong>`;
-    msg.classList.remove('hidden');
-    document.getElementById('book-btn').disabled = true;
-};
+    // Diccionario: Palabras clave y su derivación
+    const triageRules = {
+        "Traumatología": ["hueso", "golpe", "fractura", "esguince", "rodilla", "espalda", "caida", "pierna", "brazo", "doble"],
+        "Pediatría": ["niño", "bebe", "hijo", "nene", "nena", "chico"],
+        "Cardiología": ["corazon", "pecho", "taquicardia", "presion", "palpitacion", "infarto", "arritmia"],
+        "Dermatología": ["piel", "grano", "mancha", "picazon", "sarpullido", "alergia", "quemadura", "lunar"],
+        "Oftalmología": ["ojo", "vision", "ver", "lentes", "borroso", "irritacion", "conjuntivitis"]
+    };
 
-document.getElementById('close-modal').onclick = () => {
-    modal.style.display = 'none';
-    activeDoctor = null;
-};
+    // Abrir y cerrar el chat
+    chatToggle.onclick = () => chatWindow.classList.toggle('hidden');
+    closeChat.onclick = () => chatWindow.classList.add('hidden');
 
-// 6. SIMULACIÓN: Los doctores avanzan sus turnos automáticamente (24/7)
-setInterval(() => {
-    data.forEach(spec => {
-        spec.doctors.forEach(doc => {
-            // Cada 5 segundos, hay un 15% de probabilidad de que el doctor llame al siguiente paciente
-            if (Math.random() < 0.15) { 
-                doc.current++;
-                if (doc.current > 50) doc.current = 1; // Se reinicia si pasa del 50
-                
-                // Si tienes abierta la ficha de ese doctor en este momento, actualiza el número en tu pantalla
-                if (activeDoctor && activeDoctor.name === doc.name) {
-                    nowServingDisplay.textContent = `#${doc.current}`;
-                }
+    // Función para imprimir mensajes en la pantalla
+    function addMessage(text, sender) {
+        const msgDiv = document.createElement('div');
+        msgDiv.className = `message ${sender}-message`;
+        msgDiv.textContent = text;
+        chatMessages.appendChild(msgDiv);
+        chatMessages.scrollTop = chatMessages.scrollHeight; // Auto-scroll hacia abajo
+    }
+
+    // Lógica para analizar los síntomas
+    function processSymptom(input) {
+        // Quitar tildes y pasar a minúsculas para que sea más fácil buscar
+        const text = input.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+        let recommendedSpecialty = null;
+
+        for (const [specialty, keywords] of Object.entries(triageRules)) {
+            if (keywords.some(keyword => text.includes(keyword))) {
+                recommendedSpecialty = specialty;
+                break; // Si encuentra coincidencia, deja de buscar
             }
-        });
+        }
+
+        // Simulamos un tiempo de "pensamiento" de medio segundo
+        setTimeout(() => {
+            if (recommendedSpecialty) {
+                addMessage(`Basado en tus síntomas, te sugiero buscar turno con la especialidad de ${recommendedSpecialty}. Revisa nuestra lista de profesionales.`, 'bot');
+            } else {
+                addMessage("Mis disculpas, no logro identificar la especialidad exacta para ese síntoma. Te recomiendo agendar con un Médico Clínico para una evaluación general o acudir a la guardia.", 'bot');
+            }
+        }, 600); 
+    }
+
+    // Evento al hacer clic en "Enviar"
+    sendChatBtn.onclick = () => {
+        const text = chatInput.value.trim();
+        if (text) {
+            addMessage(text, 'user');
+            chatInput.value = '';
+            processSymptom(text);
+        }
+    };
+
+    // Permitir enviar el mensaje apretando la tecla "Enter"
+    chatInput.addEventListener('keypress', function (e) {
+        if (e.key === 'Enter') {
+            sendChatBtn.click();
+        }
     });
-}, 5000);
-
-// --- Lógica del Chatbot de Triaje ---
-const chatToggle = document.getElementById('chatbot-toggle');
-const chatWindow = document.getElementById('chatbot-window');
-const closeChat = document.getElementById('close-chat');
-const chatInput = document.getElementById('chat-input');
-const sendChatBtn = document.getElementById('send-chat');
-const chatMessages = document.getElementById('chat-messages');
-
-// Diccionario: Palabras clave y su derivación
-const triageRules = {
-    "Traumatología": ["hueso", "golpe", "fractura", "esguince", "rodilla", "espalda", "caida", "pierna", "brazo", "doble"],
-    "Pediatría": ["niño", "bebe", "hijo", "nene", "nena", "chico"],
-    "Cardiología": ["corazon", "pecho", "taquicardia", "presion", "palpitacion", "infarto", "arritmia"],
-    "Dermatología": ["piel", "grano", "mancha", "picazon", "sarpullido", "alergia", "quemadura", "lunar"],
-    "Oftalmología": ["ojo", "vision", "ver", "lentes", "borroso", "irritacion", "conjuntivitis"]
-};
-
-// Abrir y cerrar el chat
-chatToggle.onclick = () => chatWindow.classList.toggle('hidden');
-closeChat.onclick = () => chatWindow.classList.add('hidden');
-
-// Función para imprimir mensajes en la pantalla
-function addMessage(text, sender) {
-    const msgDiv = document.createElement('div');
-    msgDiv.className = `message ${sender}-message`;
-    msgDiv.textContent = text;
-    chatMessages.appendChild(msgDiv);
-    chatMessages.scrollTop = chatMessages.scrollHeight; // Auto-scroll hacia abajo
-}
-
-// Lógica para analizar los síntomas
-function processSymptom(input) {
-    // Quitar tildes y pasar a minúsculas para que sea más fácil buscar
-    const text = input.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
-    let recommendedSpecialty = null;
-
-    for (const [specialty, keywords] of Object.entries(triageRules)) {
-        if (keywords.some(keyword => text.includes(keyword))) {
-            recommendedSpecialty = specialty;
-            break; // Si encuentra coincidencia, deja de buscar
-        }
-    }
-
-    // Simulamos un tiempo de "pensamiento" de medio segundo
-    setTimeout(() => {
-        if (recommendedSpecialty) {
-            addMessage(`Basado en tus síntomas, te sugiero buscar turno con la especialidad de ${recommendedSpecialty}. Revisa nuestra lista de profesionales.`, 'bot');
-        } else {
-            addMessage("Mis disculpas, no logro identificar la especialidad exacta para ese síntoma. Te recomiendo agendar con un Médico Clínico para una evaluación general o acudir a la guardia.", 'bot');
-        }
-    }, 600); 
-}
-
-// Evento al hacer clic en "Enviar"
-sendChatBtn.onclick = () => {
-    const text = chatInput.value.trim();
-    if (text) {
-        addMessage(text, 'user');
-        chatInput.value = '';
-        processSymptom(text);
-    }
-};
-
-// Permitir enviar el mensaje apretando la tecla "Enter"
-chatInput.addEventListener('keypress', function (e) {
-    if (e.key === 'Enter') {
-        sendChatBtn.click();
-    }
-});
+}); // <-- IMPORTANTE: Esta llave y paréntesis cierran el bloque que abrimos arriba
