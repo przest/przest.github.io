@@ -222,4 +222,40 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         });
     }
+    /* Estilos para las etiquetas en la lista de doctores */
+.doctor-info {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    width: 100%;
+}
+
+.badge {
+    font-size: 0.75rem;
+    padding: 2px 8px;
+    border-radius: 12px;
+    font-weight: bold;
+}
+
+.badge-red {
+    background-color: #fee2e2;
+    color: #b91c1c;
+}
+
+.badge-blue {
+    background-color: #e0f2fe;
+    color: #0369a1;
+}
+
+/* Aviso dentro del modal */
+.in-person-notice {
+    background-color: #fff7ed;
+    color: #9a3412;
+    padding: 10px;
+    border-radius: 6px;
+    font-size: 0.9rem;
+    margin-bottom: 10px;
+    border: 1px solid #fdba74;
+    text-align: center;
+}
 }); // <-- Aquí se cierra la envoltura protectora principal
