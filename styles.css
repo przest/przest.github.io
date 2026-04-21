@@ -157,3 +157,34 @@ body { background-color: var(--bg-color); color: var(--text-dark); line-height: 
     margin-right: 0.5rem;
     outline: none;
 }
+
+/* --- NUEVO: Estilos del Cartel de Alerta CSS --- */
+.custom-alert-content {
+    text-align: center;
+    padding: 3rem 2rem;
+    max-width: 400px;
+}
+
+.custom-alert-title {
+    font-size: 1.2rem;
+    color: #c2410c;
+    margin-bottom: 1rem;
+    font-weight: bold;
+}
+
+.custom-alert-text {
+    color: var(--text-dark);
+    font-size: 1rem;
+    margin-bottom: 0.5rem;
+}
+
+.custom-alert-location {
+    background-color: var(--celeste);
+    padding: 0.8rem;
+    border-radius: 8px;
+    color: var(--primary-blue);
+    font-weight: bold;
+    margin-top: 1rem;
+    display: inline-block;
+    border: 1px solid #bae6fd;
+}
