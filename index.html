@@ -47,5 +47,20 @@
     </div>
 
     <script src="script.js"></script>
+    <button id="chatbot-toggle" class="chatbot-toggle">💬 Asistente Médico</button>
+
+    <div id="chatbot-window" class="chatbot-window hidden">
+        <div class="chatbot-header">
+            Triaje Virtual
+            <span id="close-chat" class="close-chat">&times;</span>
+        </div>
+        <div id="chat-messages" class="chat-messages">
+            <div class="message bot-message">Hola, soy el asistente del hospital. ¿Qué síntomas tienes o qué te duele?</div>
+        </div>
+        <div class="chat-input-area">
+            <input type="text" id="chat-input" placeholder="Ej: Me duele el pecho...">
+            <button id="send-chat" class="btn-primary" style="padding: 0.5rem 1rem;">Enviar</button>
+        </div>
+    </div>
 </body>
 </html>
