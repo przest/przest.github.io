@@ -147,3 +147,73 @@ setInterval(() => {
         });
     });
 }, 5000);
+
+// --- Lógica del Chatbot de Triaje ---
+const chatToggle = document.getElementById('chatbot-toggle');
+const chatWindow = document.getElementById('chatbot-window');
+const closeChat = document.getElementById('close-chat');
+const chatInput = document.getElementById('chat-input');
+const sendChatBtn = document.getElementById('send-chat');
+const chatMessages = document.getElementById('chat-messages');
+
+// Diccionario: Palabras clave y su derivación
+const triageRules = {
+    "Traumatología": ["hueso", "golpe", "fractura", "esguince", "rodilla", "espalda", "caida", "pierna", "brazo", "doble"],
+    "Pediatría": ["niño", "bebe", "hijo", "nene", "nena", "chico"],
+    "Cardiología": ["corazon", "pecho", "taquicardia", "presion", "palpitacion", "infarto", "arritmia"],
+    "Dermatología": ["piel", "grano", "mancha", "picazon", "sarpullido", "alergia", "quemadura", "lunar"],
+    "Oftalmología": ["ojo", "vision", "ver", "lentes", "borroso", "irritacion", "conjuntivitis"]
+};
+
+// Abrir y cerrar el chat
+chatToggle.onclick = () => chatWindow.classList.toggle('hidden');
+closeChat.onclick = () => chatWindow.classList.add('hidden');
+
+// Función para imprimir mensajes en la pantalla
+function addMessage(text, sender) {
+    const msgDiv = document.createElement('div');
+    msgDiv.className = `message ${sender}-message`;
+    msgDiv.textContent = text;
+    chatMessages.appendChild(msgDiv);
+    chatMessages.scrollTop = chatMessages.scrollHeight; // Auto-scroll hacia abajo
+}
+
+// Lógica para analizar los síntomas
+function processSymptom(input) {
+    // Quitar tildes y pasar a minúsculas para que sea más fácil buscar
+    const text = input.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+    let recommendedSpecialty = null;
+
+    for (const [specialty, keywords] of Object.entries(triageRules)) {
+        if (keywords.some(keyword => text.includes(keyword))) {
+            recommendedSpecialty = specialty;
+            break; // Si encuentra coincidencia, deja de buscar
+        }
+    }
+
+    // Simulamos un tiempo de "pensamiento" de medio segundo
+    setTimeout(() => {
+        if (recommendedSpecialty) {
+            addMessage(`Basado en tus síntomas, te sugiero buscar turno con la especialidad de ${recommendedSpecialty}. Revisa nuestra lista de profesionales.`, 'bot');
+        } else {
+            addMessage("Mis disculpas, no logro identificar la especialidad exacta para ese síntoma. Te recomiendo agendar con un Médico Clínico para una evaluación general o acudir a la guardia.", 'bot');
+        }
+    }, 600); 
+}
+
+// Evento al hacer clic en "Enviar"
+sendChatBtn.onclick = () => {
+    const text = chatInput.value.trim();
+    if (text) {
+        addMessage(text, 'user');
+        chatInput.value = '';
+        processSymptom(text);
+    }
+};
+
+// Permitir enviar el mensaje apretando la tecla "Enter"
+chatInput.addEventListener('keypress', function (e) {
+    if (e.key === 'Enter') {
+        sendChatBtn.click();
+    }
+});
