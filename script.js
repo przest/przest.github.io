@@ -69,7 +69,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     </div>
                 `;
 
-// NUEVA LÓGICA: Determinar qué cartel abrir según el doctor
+                // Lógica de clics en la lista
                 li.onclick = () => {
                     if (doc.noAvailability) {
                         showCustomAlert(
@@ -80,7 +80,7 @@ document.addEventListener('DOMContentLoaded', () => {
                         showCustomAlert(
                             "Atención Exclusivamente Presencial", 
                             "Este profesional no acepta reservas online. Por favor, acércate personalmente para solicitar un turno.",
-                            doc // Le pasamos los datos del doctor para mostrar el piso y consultorio
+                            doc 
                         );
                     } else {
                         openDoctorModal(doc);
@@ -102,7 +102,33 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     // ==========================================
-    // 2. VENTANA MODAL DE TURNOS
+    // 2. LÓGICA DEL CARTEL DE ALERTA PERSONALIZADO
+    // ==========================================
+    const customAlert = document.getElementById('custom-alert');
+    const customAlertMessage = document.getElementById('custom-alert-message');
+    const closeCustomAlert = document.getElementById('close-custom-alert');
+
+    if (closeCustomAlert) {
+        closeCustomAlert.onclick = () => customAlert.style.display = 'none';
+    }
+
+    // ¡ESTA ERA LA FUNCIÓN QUE FALTABA!
+    function showCustomAlert(title, message, doctor = null) {
+        let html = `<div class="custom-alert-title">⚠️ ${title}</div>
+                    <div class="custom-alert-text">${message}</div>`;
+        
+        if (doctor) {
+            html += `<div class="custom-alert-location">📍 Ubicación: ${doctor.floor}, Consultorio ${doctor.room}</div>`;
+        }
+        
+        if (customAlertMessage && customAlert) {
+            customAlertMessage.innerHTML = html;
+            customAlert.style.display = 'block';
+        }
+    }
+
+    // ==========================================
+    // 3. VENTANA MODAL DE TURNOS (RESERVAS NORMALES)
     // ==========================================
     function openDoctorModal(doctor) {
         activeDoctor = doctor;
@@ -115,13 +141,6 @@ document.addEventListener('DOMContentLoaded', () => {
         const container = document.getElementById('time-slots');
         container.innerHTML = '';
 
-        if (doctor.inPersonOnly) {
-            const notice = document.createElement('div');
-            notice.className = 'in-person-notice';
-            notice.textContent = "⚠️ Este profesional solo otorga turnos para atención presencial.";
-            container.appendChild(notice);
-        }
-        
         generateSlots(container);
         modal.style.display = 'block';
     }
@@ -153,7 +172,6 @@ document.addEventListener('DOMContentLoaded', () => {
             const ticket = Math.floor(Math.random() * 15) + 1;
             const msg = document.getElementById('result-message');
             
-            // Aquí inyectamos el mensaje con los datos fijos del doctor seleccionado
             msg.innerHTML = `
                 ¡Reserva exitosa!<br>
                 Tu turno es el <strong>#${ticket}</strong><br><br>
@@ -188,7 +206,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }, 5000);
 
     // ==========================================
-    // 3. CHATBOT DE TRIAJE
+    // 4. CHATBOT DE TRIAJE
     // ==========================================
     const chatToggle = document.getElementById('chatbot-toggle');
     const chatWindow = document.getElementById('chatbot-window');
