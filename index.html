@@ -1,0 +1,1001 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Sistema de Gestión de Mantenimiento e Inventario | Ingenio Ledesma</title>
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            ledesma: {
+              50: '#f0fdf4',
+              100: '#dcfce7',
+              500: '#15803d',
+              600: '#166534',
+              700: '#14532d',
+              800: '#0f3e22',
+              900: '#0b2e19'
+            }
+          }
+        }
+      }
+    }
+  </script>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+    body { font-family: 'Inter', sans-serif; }
+    .badge-pulse { animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite; }
+    @keyframes pulse {
+      0%, 100% { opacity: 1; }
+      50% { opacity: .5; }
+    }
+  </style>
+</head>
+<body class="bg-slate-100 text-slate-800 antialiased min-h-screen flex flex-col">
+
+  <!-- HEADER INSTITUCIONAL -->
+  <header class="bg-gradient-to-r from-ledesma-900 via-ledesma-800 to-ledesma-700 text-white shadow-lg sticky top-0 z-40 border-b border-emerald-600">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div class="flex items-center justify-between h-16">
+        <!-- Logo y Título -->
+        <div class="flex items-center space-x-3">
+          <div class="w-10 h-10 rounded-lg bg-white/10 flex items-center justify-center border border-white/20 text-2xl">
+            🚜
+          </div>
+          <div>
+            <div class="flex items-center space-x-2">
+              <span class="text-xs uppercase tracking-widest font-bold text-emerald-300">Ingenio Ledesma</span>
+              <span class="text-[10px] bg-emerald-500/30 text-emerald-200 px-2 py-0.5 rounded-full border border-emerald-400/30">Prototipo Interactivo</span>
+            </div>
+            <h1 class="text-base sm:text-lg font-bold leading-tight">Sistema Inteligente de Mantenimiento & Pañol</h1>
+            <p class="text-[11px] text-emerald-200 hidden sm:block">Gerencia de Producción de Frutas y Jugo — Libertador Gral. San Martín, Jujuy</p>
+          </div>
+        </div>
+
+        <!-- Alertas de Cabecera y Estado Global -->
+        <div class="flex items-center space-x-3">
+          <div class="hidden sm:flex items-center space-x-2 text-xs bg-black/25 px-3 py-1.5 rounded-lg border border-white/10">
+            <span class="w-2 h-2 rounded-full bg-emerald-400"></span>
+            <span class="text-slate-200">Flota: <strong>54 Activos</strong></span>
+            <span class="text-white/30">|</span>
+            <span class="text-red-300 font-semibold flex items-center space-x-1">
+              <span class="w-2 h-2 rounded-full bg-red-500 badge-pulse"></span>
+              <span id="header-criticos">4 Críticos</span>
+            </span>
+          </div>
+
+          <span class="text-[11px] bg-emerald-500 text-white px-2.5 py-1 rounded-md font-semibold border border-emerald-400/40 shadow-sm">
+            Vista Multirrol Activa
+          </span>
+        </div>
+      </div>
+    </div>
+
+    <!-- PESTAÑAS ESTRUCTURADAS POR ROL DE USUARIO -->
+    <div class="bg-ledesma-900/80 border-t border-emerald-800/80">
+      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <nav class="flex space-x-1 sm:space-x-2 overflow-x-auto py-2 text-xs sm:text-sm font-medium" id="nav-tabs">
+          <button onclick="cambiarTab('tab-empleados')" id="btn-tab-empleados" class="px-3.5 py-2 rounded-lg transition flex items-center space-x-2 bg-emerald-600 text-white shadow-sm">
+            <span>👨‍🌾</span>
+            <span>1. Portal Empleados (Campo)</span>
+          </button>
+          <button onclick="cambiarTab('tab-panol')" id="btn-tab-panol" class="px-3.5 py-2 rounded-lg transition flex items-center space-x-2 text-emerald-200 hover:text-white hover:bg-white/10">
+            <span>📦</span>
+            <span>2. Sistema Pañol ("El Español")</span>
+          </button>
+          <button onclick="cambiarTab('tab-whatsapp')" id="btn-tab-whatsapp" class="px-3.5 py-2 rounded-lg transition flex items-center space-x-2 text-emerald-200 hover:text-white hover:bg-white/10 relative">
+            <span>💬</span>
+            <span>3. WhatsApp Leonel (Móvil)</span>
+            <span class="w-2 h-2 rounded-full bg-green-400"></span>
+          </button>
+          <button onclick="cambiarTab('tab-gerencial')" id="btn-tab-gerencial" class="px-3.5 py-2 rounded-lg transition flex items-center space-x-2 text-emerald-200 hover:text-white hover:bg-white/10">
+            <span>📊</span>
+            <span>4. Panel Gerencial (Jefatura)</span>
+          </button>
+        </nav>
+      </div>
+    </div>
+  </header>
+
+  <!-- CONTENEDOR PRINCIPAL -->
+  <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 flex-1 w-full">
+
+    <!-- ========================================================================= -->
+    <!-- VENTANA 1: PORTAL PARA LOS EMPLEADOS (OPERARIOS, CHOFERES Y FLETEROS)     -->
+    <!-- ========================================================================= -->
+    <section id="tab-empleados" class="space-y-6">
+      <!-- Banner Informativo del Rol -->
+      <div class="bg-white border-l-4 border-emerald-600 rounded-xl p-4 shadow-sm flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2">
+        <div>
+          <span class="text-xs uppercase tracking-wider font-bold text-emerald-700">Rol: Operario de Finca / Chofer / Fletero de Combustible</span>
+          <h2 class="text-base font-bold text-slate-800">Carga Rápida de Campo y Estado del Equipo</h2>
+          <p class="text-xs text-slate-500">Permite registrar el horómetro en cada recarga de combustible eliminando el cuaderno manual de los viernes.</p>
+        </div>
+        <div class="flex items-center space-x-2 text-xs text-slate-600 bg-slate-50 px-3 py-1.5 rounded-lg border border-slate-200">
+          <span>📍 Punto de Carga:</span>
+          <strong class="text-slate-800">Quinta Sur / Surtidor Móvil</strong>
+        </div>
+      </div>
+
+      <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <!-- Tarjeta de Estado del Equipo Seleccionado -->
+        <div class="lg:col-span-1 bg-white p-5 rounded-2xl shadow-sm border border-slate-200 flex flex-col justify-between">
+          <div>
+            <div class="flex justify-between items-center mb-3">
+              <span class="text-xs font-semibold uppercase text-slate-400">Consultar Tractor Asignado</span>
+              <span id="empleado-badge-estado" class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-red-100 text-red-800 border border-red-200">
+                🔴 VENCIDO
+              </span>
+            </div>
+
+            <!-- Selector de Equipo -->
+            <select id="empleado-select-equipo" onchange="actualizarVistaEmpleado()" class="w-full bg-slate-50 border border-slate-300 rounded-xl p-3 text-sm font-bold text-slate-800 focus:ring-2 focus:ring-emerald-500">
+              <!-- Cargado con JS -->
+            </select>
+
+            <!-- Datos Clave del Equipo -->
+            <div class="mt-4 p-4 rounded-xl bg-slate-50 border border-slate-100 space-y-2.5 text-xs">
+              <div class="flex justify-between">
+                <span class="text-slate-500">Modelo:</span>
+                <strong class="text-slate-800" id="emp-modelo">John Deere 5075E</strong>
+              </div>
+              <div class="flex justify-between">
+                <span class="text-slate-500">Ubicación Actual:</span>
+                <span class="font-medium text-slate-700" id="emp-quinta">Quinta Sur</span>
+              </div>
+              <div class="flex justify-between">
+                <span class="text-slate-500">Horómetro Vigente:</span>
+                <strong class="font-mono text-sm text-slate-900" id="emp-horometro">4.867 h</strong>
+              </div>
+              <div class="flex justify-between">
+                <span class="text-slate-500">Régimen Diario:</span>
+                <span class="font-mono text-slate-700" id="emp-tasa">10.5 h/día</span>
+              </div>
+              <div class="flex justify-between pt-2 border-t border-slate-200">
+                <span class="text-slate-500">Último Service Realizado:</span>
+                <span class="text-slate-700" id="emp-ultimo">T1 a las 4.200 h</span>
+              </div>
+            </div>
+
+            <!-- Semáforo Visual para el Conductor -->
+            <div id="emp-alerta-box" class="mt-4 p-3 rounded-xl bg-red-50 border border-red-200 text-xs text-red-800">
+              <strong class="block font-bold mb-0.5">⚠️ Mantenimiento Vencido (+317 h)</strong>
+              El equipo ha excedido el intervalo de 350 h. Informar a Leonel antes de iniciar labores de cosecha pesada.
+            </div>
+          </div>
+
+          <div class="mt-5 pt-3 border-t border-slate-100 text-[11px] text-slate-400 text-center">
+            Diseñado para operarios de campo con botones táctiles grandes.
+          </div>
+        </div>
+
+        <!-- Formulario de Despacho y Registro de Horómetro -->
+        <div class="lg:col-span-2 bg-white p-6 rounded-2xl shadow-sm border border-slate-200">
+          <div class="flex items-center space-x-2 pb-3 mb-4 border-b border-slate-100">
+            <span class="text-xl">⛽</span>
+            <div>
+              <h3 class="text-sm font-bold text-slate-800">Registro de Carga de Combustible y Horómetro</h3>
+              <p class="text-xs text-slate-500">Al registrar la carga, el sistema actualiza automáticamente el desgaste en Pañol y Gerencia.</p>
+            </div>
+          </div>
+
+          <form onsubmit="registrarCargaEmpleado(event)" class="space-y-4 text-xs">
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div>
+                <label class="block font-semibold text-slate-700 mb-1">Equipo / Maquinaria:</label>
+                <input type="text" id="emp-form-equipo" readonly class="w-full bg-slate-100 border border-slate-200 rounded-lg p-2.5 font-bold text-slate-800">
+              </div>
+              <div>
+                <label class="block font-semibold text-slate-700 mb-1">Fecha y Turno:</label>
+                <input type="date" id="emp-form-fecha" required class="w-full bg-slate-50 border border-slate-300 rounded-lg p-2.5">
+              </div>
+            </div>
+
+            <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+              <div>
+                <label class="block font-semibold text-slate-700 mb-1">Litros Gasoil Despachados:</label>
+                <input type="number" id="emp-form-litros" value="85" step="5" required class="w-full bg-slate-50 border border-slate-300 rounded-lg p-2.5 font-mono text-slate-900">
+              </div>
+              <div>
+                <label class="block font-semibold text-slate-700 mb-1">Horómetro Anterior:</label>
+                <input type="text" id="emp-form-anterior" readonly class="w-full bg-slate-100 border border-slate-200 rounded-lg p-2.5 font-mono text-slate-500">
+              </div>
+              <div>
+                <label class="block font-semibold text-emerald-800 mb-1">Nuevo Horómetro (del reloj):</label>
+                <input type="number" id="emp-form-nuevo" step="0.5" required class="w-full bg-emerald-50 border border-emerald-400 rounded-lg p-2.5 font-mono font-bold text-emerald-900 text-sm focus:ring-2 focus:ring-emerald-500">
+              </div>
+            </div>
+
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div>
+                <label class="block font-semibold text-slate-700 mb-1">Chofer / Operario Responsable:</label>
+                <input type="text" id="emp-form-chofer" value="Juan Carlos Gómez (Leg. 4512)" class="w-full bg-slate-50 border border-slate-300 rounded-lg p-2.5">
+              </div>
+              <div>
+                <label class="block font-semibold text-slate-700 mb-1">Fletero / Despachador de Combustible:</label>
+                <input type="text" id="emp-form-fletero" value="Cisterna Móvil Yuto 02" class="w-full bg-slate-50 border border-slate-300 rounded-lg p-2.5">
+              </div>
+            </div>
+
+            <div>
+              <label class="block font-semibold text-slate-700 mb-1">Reporte de Novedad Mecánica (Opcional):</label>
+              <textarea id="emp-form-obs" rows="2" placeholder="Ej: Pérdida leve de fluido hidráulico por manguera de acople, ruido en bomba..." class="w-full bg-slate-50 border border-slate-300 rounded-lg p-2.5 text-xs"></textarea>
+            </div>
+
+            <div class="flex justify-end pt-2">
+              <button type="submit" class="bg-emerald-600 hover:bg-emerald-500 text-white font-semibold text-xs sm:text-sm px-5 py-2.5 rounded-xl shadow-md transition flex items-center space-x-2">
+                <span>💾 Confirmar y Registrar en el Sistema</span>
+              </button>
+            </div>
+          </form>
+
+          <!-- Historial de las Últimas 3 Cargas -->
+          <div class="mt-6 pt-4 border-t border-slate-100">
+            <h4 class="text-xs font-bold text-slate-700 uppercase mb-2">Últimos Registros de Campo</h4>
+            <div class="space-y-1.5 text-xs" id="emp-historial-cargas">
+              <!-- Renderizado con JS -->
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+
+    <!-- ========================================================================= -->
+    <!-- VENTANA 2: SISTEMA PARA EL PAÑOL (ALMACÉN "EL ESPAÑOL")                   -->
+    <!-- ========================================================================= -->
+    <section id="tab-panol" class="space-y-6 hidden">
+      <!-- Banner Informativo del Rol -->
+      <div class="bg-white border-l-4 border-amber-600 rounded-xl p-4 shadow-sm flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2">
+        <div>
+          <span class="text-xs uppercase tracking-wider font-bold text-amber-700">Rol: Pañolero / Control de Almacén "El Español"</span>
+          <h2 class="text-base font-bold text-slate-800">Control Proactivo de Stock & Punto de Reposición (PR)</h2>
+          <p class="text-xs text-slate-500">Evita el "quiebre invisible de stock" reservando kits para los services proyectados a 21 días (Lead Time).</p>
+        </div>
+        <button onclick="descargarCSVAriba()" class="bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-semibold px-4 py-2 rounded-lg shadow transition flex items-center space-x-2">
+          <span>📑</span>
+          <span>Generar Solicitud de Pedido (PR para Ariba)</span>
+        </button>
+      </div>
+
+      <!-- Resumen de Alertas de Pañol -->
+      <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+        <div class="bg-white p-4 rounded-xl border border-red-200 bg-red-50/20 shadow-sm flex items-center justify-between">
+          <div>
+            <span class="text-xs text-red-600 font-semibold uppercase">Quiebre Invisible Inminente</span>
+            <p class="text-2xl font-bold text-red-700 mt-0.5" id="panol-count-quiebres">2 Insumos</p>
+            <p class="text-[11px] text-slate-500">Stock físico no cubre los services previstos</p>
+          </div>
+          <span class="text-2xl">⚠️</span>
+        </div>
+
+        <div class="bg-white p-4 rounded-xl border border-amber-200 bg-amber-50/20 shadow-sm flex items-center justify-between">
+          <div>
+            <span class="text-xs text-amber-600 font-semibold uppercase">En Punto de Reposición (PR)</span>
+            <p class="text-2xl font-bold text-amber-700 mt-0.5">3 Códigos</p>
+            <p class="text-[11px] text-slate-500">Disparar orden de compra a proveedores</p>
+          </div>
+          <span class="text-2xl">📦</span>
+        </div>
+
+        <div class="bg-white p-4 rounded-xl border border-slate-200 shadow-sm flex items-center justify-between">
+          <div>
+            <span class="text-xs text-slate-500 font-semibold uppercase">Lead Time Promedio</span>
+            <p class="text-2xl font-bold text-slate-800 mt-0.5">14 a 21 Días</p>
+            <p class="text-[11px] text-slate-500">Proveedores en Tucumán / Rosario / Bs.As.</p>
+          </div>
+          <span class="text-2xl">🚚</span>
+        </div>
+      </div>
+
+      <!-- Tabla de Existencias, Demanda BOM y Punto de Reposición -->
+      <div class="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
+        <div class="p-4 border-b border-slate-200 bg-slate-50 flex justify-between items-center">
+          <div>
+            <h3 class="text-sm font-bold text-slate-800">Catálogo de Repuestos Críticos y Reserva Virtual</h3>
+            <p class="text-xs text-slate-500">Fórmula industrial: PR = (Consumo Diario × Lead Time) + Stock de Seguridad</p>
+          </div>
+          <span class="text-[11px] bg-slate-200 text-slate-700 px-2.5 py-1 rounded font-medium">
+            Regla de Negocio: Tambores 205 L
+          </span>
+        </div>
+
+        <div class="overflow-x-auto">
+          <table class="w-full text-left text-xs border-collapse">
+            <thead>
+              <tr class="bg-slate-100/70 text-slate-600 font-semibold border-b border-slate-200">
+                <th class="py-3 px-4">Código SAP</th>
+                <th class="py-3 px-4">Descripción de Repuesto</th>
+                <th class="py-3 px-4">Uso / Kit</th>
+                <th class="py-3 px-4 font-mono">Stock Físico</th>
+                <th class="py-3 px-4 font-mono text-amber-700">Reserva BOM</th>
+                <th class="py-3 px-4 font-mono">Stock Disponible</th>
+                <th class="py-3 px-4 font-mono">Punto Reposición</th>
+                <th class="py-3 px-4">Lead Time</th>
+                <th class="py-3 px-4">Estado Pañol</th>
+                <th class="py-3 px-4 text-right">Sugerencia Compra</th>
+              </tr>
+            </thead>
+            <tbody id="tabla-repuestos-body" class="divide-y divide-slate-200">
+              <!-- Renderizado con JS -->
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- Detalle de Estructura de Materiales (Kits BOM) -->
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <div class="bg-white p-4 rounded-xl border border-slate-200 shadow-sm">
+          <div class="flex items-center justify-between pb-2 border-b border-slate-200">
+            <span class="font-bold text-xs text-slate-800">Kit Service T1 (350 hs)</span>
+            <span class="text-[10px] bg-emerald-100 text-emerald-800 px-2 py-0.5 rounded font-semibold">Menor</span>
+          </div>
+          <ul class="mt-3 space-y-1.5 text-xs text-slate-600">
+            <li class="flex justify-between"><span>• 1x Filtro Aceite Motor JD</span> <strong class="text-slate-800">1 un</strong></li>
+            <li class="flex justify-between"><span>• Aceite Lubricante 15W40</span> <strong class="text-slate-800">15 Litros</strong></li>
+            <li class="flex justify-between"><span>• 1x Arandela cárter cobre</span> <strong class="text-slate-800">1 un</strong></li>
+          </ul>
+        </div>
+
+        <div class="bg-white p-4 rounded-xl border border-slate-200 shadow-sm">
+          <div class="flex items-center justify-between pb-2 border-b border-slate-200">
+            <span class="font-bold text-xs text-slate-800">Kit Service T2 (700 hs)</span>
+            <span class="text-[10px] bg-amber-100 text-amber-800 px-2 py-0.5 rounded font-semibold">Intermedio</span>
+          </div>
+          <ul class="mt-3 space-y-1.5 text-xs text-slate-600">
+            <li class="flex justify-between"><span>• Todo el Kit T1</span> <strong class="text-slate-800">Incluido</strong></li>
+            <li class="flex justify-between"><span>• 1x Filtro Combustible Primario</span> <strong class="text-slate-800">1 un</strong></li>
+            <li class="flex justify-between"><span>• 1x Filtro Aire Secundario</span> <strong class="text-slate-800">1 un</strong></li>
+            <li class="flex justify-between"><span>• Grasa de litio para chassis</span> <strong class="text-slate-800">2 kg</strong></li>
+          </ul>
+        </div>
+
+        <div class="bg-white p-4 rounded-xl border border-slate-200 shadow-sm">
+          <div class="flex items-center justify-between pb-2 border-b border-slate-200">
+            <span class="font-bold text-xs text-slate-800">Kit Service T4 (1.400 hs)</span>
+            <span class="text-[10px] bg-red-100 text-red-800 px-2 py-0.5 rounded font-semibold">Mayor / Anual</span>
+          </div>
+          <ul class="mt-3 space-y-1.5 text-xs text-slate-600">
+            <li class="flex justify-between"><span>• Todo el Kit T2</span> <strong class="text-slate-800">Incluido</strong></li>
+            <li class="flex justify-between"><span>• Aceite Hidráulico TO-2</span> <strong class="text-slate-800">45 Litros</strong></li>
+            <li class="flex justify-between"><span>• 2x Filtro Hidráulico Transmisión</span> <strong class="text-slate-800">2 un</strong></li>
+            <li class="flex justify-between"><span>• Correa trapezoidal de alternador</span> <strong class="text-slate-800">1 un</strong></li>
+          </ul>
+        </div>
+      </div>
+    </section>
+
+
+    <!-- ========================================================================= -->
+    <!-- VENTANA 3: WHATSAPP DE LEONEL (ALERTAS OPERATIVAS EN TERRENO)             -->
+    <!-- ========================================================================= -->
+    <section id="tab-whatsapp" class="space-y-6 hidden">
+      <!-- Banner Informativo del Rol -->
+      <div class="bg-white border-l-4 border-green-600 rounded-xl p-4 shadow-sm flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2">
+        <div>
+          <span class="text-xs uppercase tracking-wider font-bold text-green-700">Rol: Jefe de Taller en Recorrido de Campo (Ing. Leonel Vargas)</span>
+          <h2 class="text-base font-bold text-slate-800">Asistente de Notificaciones Móviles por WhatsApp</h2>
+          <p class="text-xs text-slate-500">Alertas automáticas en el celular sin ingresar a la computadora mientras supervisa las quintas remotas.</p>
+        </div>
+        <button onclick="simularNuevaAlertaWhatsApp()" class="bg-green-600 hover:bg-green-500 text-white text-xs font-semibold px-3.5 py-2 rounded-lg shadow transition flex items-center space-x-1.5">
+          <span>🔔</span>
+          <span>Simular Disparo de Alerta</span>
+        </button>
+      </div>
+
+      <!-- Mockup Smartphone de WhatsApp -->
+      <div class="max-w-md mx-auto">
+        <div class="bg-slate-900 rounded-[2.5rem] p-3 shadow-2xl border-4 border-slate-700">
+          <div class="bg-[#ECE5DD] rounded-[2rem] overflow-hidden flex flex-col h-[600px] shadow-inner">
+            
+            <!-- Barra superior WhatsApp -->
+            <div class="bg-[#075E54] text-white p-3 flex items-center justify-between shadow">
+              <div class="flex items-center space-x-2.5">
+                <div class="w-9 h-9 rounded-full bg-emerald-800 flex items-center justify-center font-bold text-sm border border-emerald-400">
+                  🚜
+                </div>
+                <div>
+                  <h3 class="font-semibold text-xs leading-tight">Asistente Taller Ledesma</h3>
+                  <p class="text-[10px] text-emerald-200">en línea • bot oficial pañol</p>
+                </div>
+              </div>
+              <div class="flex items-center space-x-3 text-slate-200 text-xs">
+                <span>📞</span>
+                <span>⋮</span>
+              </div>
+            </div>
+
+            <!-- Área de Chats -->
+            <div class="flex-1 p-3.5 overflow-y-auto space-y-3 text-xs" id="chat-mensajes">
+              <!-- Fecha -->
+              <div class="text-center my-1">
+                <span class="bg-white/80 text-slate-600 text-[10px] px-2.5 py-0.5 rounded-md shadow-sm">Hoy</span>
+              </div>
+
+              <!-- Mensaje 1: Alerta Mantenimiento Tractor 1043 -->
+              <div class="bg-white p-3 rounded-lg rounded-tl-none shadow-sm max-w-[92%] border-l-4 border-red-500">
+                <div class="flex items-center space-x-1 text-red-600 font-bold text-[11px] mb-1">
+                  <span>🔴</span>
+                  <span>ALERTA DE SERVICE VENCIDO</span>
+                </div>
+                <p class="text-slate-800 mb-1 leading-relaxed">
+                  <strong>Ing. Vargas:</strong> El tractor <strong>T-1043 (John Deere 5075E)</strong> en <em>Quinta Sur</em> alcanzó <strong>4.867 horas</strong> (+317 h sobre el service de 350 h).
+                </p>
+                <div class="bg-red-50 p-2 rounded text-[11px] text-red-900 mb-1 border border-red-200">
+                  <strong>Kit BOM T1 reservado en pañol:</strong><br>
+                  • 15L Aceite 15W40 (Cod. SAP 1008452)<br>
+                  • 1x Filtro Aceite Motor JD (Cod. SAP 2004123)
+                </div>
+                <p class="text-[11px] text-slate-600">Se sugiere coordinar ingreso a bahía de taller.</p>
+                <span class="text-[9px] text-slate-400 block text-right mt-1">08:15 AM ✓✓</span>
+              </div>
+
+              <!-- Mensaje 2: Alerta Compras Pañol -->
+              <div class="bg-white p-3 rounded-lg rounded-tl-none shadow-sm max-w-[92%] border-l-4 border-amber-500">
+                <div class="flex items-center space-x-1 text-amber-700 font-bold text-[11px] mb-1">
+                  <span>📦</span>
+                  <span>ALERTA DE REPOSICIÓN (PAÑOL)</span>
+                </div>
+                <p class="text-slate-800 mb-1 leading-relaxed">
+                  <strong>Aviso Pañol:</strong> El insumo <strong>Aceite 15W40</strong> alcanzó el Punto de Reposición (PR: 500 L).
+                </p>
+                <div class="bg-amber-50 p-2 rounded text-[11px] text-amber-900 mb-1 border border-amber-200">
+                  Stock Físico: 420 L • Reserva 21 días: 380 L<br>
+                  <strong>Disponible real: 40 L</strong> (Quiebre Inminente)
+                </div>
+                <p class="text-[11px] text-slate-700">
+                  🛒 Se generó lista para Solicitud de Pedido (PR) en Ariba por <strong>3 Tambores (615 L)</strong>.
+                </p>
+                <span class="text-[9px] text-slate-400 block text-right mt-1">08:30 AM ✓✓</span>
+              </div>
+
+              <!-- Mensaje 3: Turbopulverizador TP-04 -->
+              <div class="bg-white p-3 rounded-lg rounded-tl-none shadow-sm max-w-[92%] border-l-4 border-emerald-500">
+                <div class="flex items-center space-x-1 text-emerald-700 font-bold text-[11px] mb-1">
+                  <span>🟢</span>
+                  <span>MONITOREO DE COSECHA (TURBO)</span>
+                </div>
+                <p class="text-slate-800 mb-1 leading-relaxed">
+                  <strong>TP-04 (Jacto Arbus 2000):</strong> Régimen intenso de <strong>20.0 h/día</strong> en <em>Citrus Alta</em>.
+                </p>
+                <p class="text-slate-600 text-[11px]">
+                  Faltan 120 h para service T2. Fecha estimada de taller: <strong>13 de Noviembre</strong>.
+                </p>
+                <span class="text-[9px] text-slate-400 block text-right mt-1">09:02 AM ✓✓</span>
+              </div>
+            </div>
+
+            <!-- Barra inferior WhatsApp simulada -->
+            <div class="bg-[#F0F0F0] p-2 flex items-center space-x-2 border-t border-slate-300">
+              <span class="text-slate-400 text-sm">😊</span>
+              <input type="text" placeholder="Asistente automatizado (solo lectura)..." disabled class="flex-1 bg-white rounded-full px-3 py-1.5 text-xs border border-slate-300 text-slate-400">
+              <div class="bg-[#128C7E] text-white p-2 rounded-full w-7 h-7 flex items-center justify-center text-xs">
+                🎤
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+
+    <!-- ========================================================================= -->
+    <!-- VENTANA 4: PANEL GERENCIAL & PLANIFICACIÓN DE TALLER (JEFATURA Y GERENCIA) -->
+    <!-- ========================================================================= -->
+    <section id="tab-gerencial" class="space-y-6 hidden">
+      <!-- Banner Informativo del Rol -->
+      <div class="bg-white border-l-4 border-blue-600 rounded-xl p-4 shadow-sm flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2">
+        <div>
+          <span class="text-xs uppercase tracking-wider font-bold text-blue-700">Rol: Jefe de Taller (Ing. Leonel Vargas) & Gerencia de Frutas</span>
+          <h2 class="text-base font-bold text-slate-800">Panel Gerencial de Planificación Semanal y KPIs</h2>
+          <p class="text-xs text-slate-500">Planificación proactiva de ingresos a taller (3-4 por semana), asignación de mecánicos y control de costos.</p>
+        </div>
+        <div class="flex items-center space-x-2">
+          <span class="text-xs text-slate-500">Semana Operativa:</span>
+          <span class="text-xs bg-slate-100 font-bold px-3 py-1 rounded-lg border border-slate-200">Zafra Semana 45</span>
+        </div>
+      </div>
+
+      <!-- Tarjetas KPIs Ejecutivos -->
+      <div class="grid grid-cols-2 lg:grid-cols-4 gap-4">
+        <div class="bg-white p-4 rounded-xl border border-slate-200 shadow-sm">
+          <p class="text-xs text-slate-500 font-medium">Disponibilidad de Flota en Zafra</p>
+          <p class="text-2xl font-bold text-emerald-600 mt-1">94.2%</p>
+          <p class="text-[11px] text-slate-500 mt-0.5">Meta zafra: > 90% (evita atraso de cosecha)</p>
+        </div>
+
+        <div class="bg-white p-4 rounded-xl border border-slate-200 shadow-sm">
+          <p class="text-xs text-slate-500 font-medium">Cumplimiento Planes Preventivos</p>
+          <p class="text-2xl font-bold text-slate-800 mt-1">82.5%</p>
+          <p class="text-[11px] text-emerald-600 mt-0.5">↑ +28% frente al modelo manual de papel</p>
+        </div>
+
+        <div class="bg-white p-4 rounded-xl border border-slate-200 shadow-sm">
+          <p class="text-xs text-slate-500 font-medium">Ahorro en Roturas Severas</p>
+          <p class="text-2xl font-bold text-slate-800 mt-1">USD 25.000</p>
+          <p class="text-[11px] text-emerald-600 mt-0.5">2 motores protegidos (USD 12.500 c/u)</p>
+        </div>
+
+        <div class="bg-white p-4 rounded-xl border border-slate-200 shadow-sm">
+          <p class="text-xs text-slate-500 font-medium">Días Inoperativos Prevenidos</p>
+          <p class="text-2xl font-bold text-blue-600 mt-1">45 Días</p>
+          <p class="text-[11px] text-slate-500 mt-0.5">Anticipándose a plazos de 7 a 21 días</p>
+        </div>
+      </div>
+
+      <!-- MÓDULO DE PLANIFICACIÓN SEMANAL (Reemplazo del Excel personal de Leonel) -->
+      <div class="bg-white p-5 rounded-2xl shadow-sm border border-slate-200">
+        <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center pb-3 mb-4 border-b border-slate-200 gap-2">
+          <div>
+            <h3 class="text-sm font-bold text-slate-800">Planificador Semanal de Ingresos a Bahía de Taller</h3>
+            <p class="text-xs text-slate-500">Priorización matemática de los 3 a 4 tractores que deben ingresar la semana entrante con sus mecánicos asignados.</p>
+          </div>
+          <span class="text-xs bg-emerald-50 text-emerald-700 font-bold px-3 py-1 rounded-lg border border-emerald-200">
+            Capacidad Taller: 10 services / semana
+          </span>
+        </div>
+
+        <div class="overflow-x-auto">
+          <table class="w-full text-left text-xs">
+            <thead>
+              <tr class="bg-slate-100/80 text-slate-700 font-semibold border-b border-slate-200">
+                <th class="py-2.5 px-3">Prioridad</th>
+                <th class="py-2.5 px-3">Equipo</th>
+                <th class="py-2.5 px-3">Quinta</th>
+                <th class="py-2.5 px-3">Service</th>
+                <th class="py-2.5 px-3">Desvío / Margen</th>
+                <th class="py-2.5 px-3">Kit en Pañol</th>
+                <th class="py-2.5 px-3">Mecánico Asignado (Plantel 29)</th>
+                <th class="py-2.5 px-3 text-center">Estado Programación</th>
+              </tr>
+            </thead>
+            <tbody class="divide-y divide-slate-100">
+              <tr class="bg-red-50/40">
+                <td class="py-2.5 px-3 font-bold text-red-700">1° (Urgente)</td>
+                <td class="py-2.5 px-3 font-bold text-slate-900">T-1043 (John Deere 5075E)</td>
+                <td class="py-2.5 px-3">Quinta Sur</td>
+                <td class="py-2.5 px-3">T1 (350 h)</td>
+                <td class="py-2.5 px-3 font-mono font-bold text-red-600">+317 h Vencido</td>
+                <td class="py-2.5 px-3"><span class="text-emerald-700 font-semibold">✓ Apartado</span></td>
+                <td class="py-2.5 px-3">
+                  <select class="bg-white border border-slate-300 rounded p-1 text-xs">
+                    <option selected>Carlos Mamani (Mecánico Senior)</option>
+                    <option>Roberto Díaz (Especialista JD)</option>
+                    <option>Marcos Saldaño</option>
+                  </select>
+                </td>
+                <td class="py-2.5 px-3 text-center">
+                  <span class="bg-red-100 text-red-800 text-[10px] font-bold px-2 py-0.5 rounded">Ingreso Lunes</span>
+                </td>
+              </tr>
+
+              <tr class="bg-amber-50/30">
+                <td class="py-2.5 px-3 font-bold text-amber-700">2° (Alerta)</td>
+                <td class="py-2.5 px-3 font-bold text-slate-900">T-1012 (Massey Ferguson)</td>
+                <td class="py-2.5 px-3">Quinta Norte</td>
+                <td class="py-2.5 px-3">T1 (350 h)</td>
+                <td class="py-2.5 px-3 font-mono text-amber-700">Faltan 18 h (~2 días)</td>
+                <td class="py-2.5 px-3"><span class="text-emerald-700 font-semibold">✓ Apartado</span></td>
+                <td class="py-2.5 px-3">
+                  <select class="bg-white border border-slate-300 rounded p-1 text-xs">
+                    <option>Carlos Mamani</option>
+                    <option selected>Roberto Díaz (Especialista JD)</option>
+                    <option>Marcos Saldaño</option>
+                  </select>
+                </td>
+                <td class="py-2.5 px-3 text-center">
+                  <span class="bg-amber-100 text-amber-800 text-[10px] font-bold px-2 py-0.5 rounded">Ingreso Martes</span>
+                </td>
+              </tr>
+
+              <tr class="bg-amber-50/30">
+                <td class="py-2.5 px-3 font-bold text-amber-700">3° (Alerta)</td>
+                <td class="py-2.5 px-3 font-bold text-slate-900">TP-04 (Jacto Arbus 2000)</td>
+                <td class="py-2.5 px-3">Citrus Alta</td>
+                <td class="py-2.5 px-3">T2 (700 h)</td>
+                <td class="py-2.5 px-3 font-mono text-amber-700">Faltan 40 h (~2 días)</td>
+                <td class="py-2.5 px-3"><span class="text-amber-700 font-semibold">⏳ En camino Ariba</span></td>
+                <td class="py-2.5 px-3">
+                  <select class="bg-white border border-slate-300 rounded p-1 text-xs">
+                    <option>Carlos Mamani</option>
+                    <option>Roberto Díaz</option>
+                    <option selected>Marcos Saldaño (Turbos)</option>
+                  </select>
+                </td>
+                <td class="py-2.5 px-3 text-center">
+                  <span class="bg-amber-100 text-amber-800 text-[10px] font-bold px-2 py-0.5 rounded">Ingreso Miércoles</span>
+                </td>
+              </tr>
+
+              <tr>
+                <td class="py-2.5 px-3 font-bold text-slate-500">4° (Preventivo)</td>
+                <td class="py-2.5 px-3 font-bold text-slate-900">T-1088 (New Holland)</td>
+                <td class="py-2.5 px-3">Citrus Alta</td>
+                <td class="py-2.5 px-3">T1 (350 h)</td>
+                <td class="py-2.5 px-3 font-mono text-slate-600">Faltan 48 h (~4 días)</td>
+                <td class="py-2.5 px-3"><span class="text-emerald-700 font-semibold">✓ Apartado</span></td>
+                <td class="py-2.5 px-3">
+                  <select class="bg-white border border-slate-300 rounded p-1 text-xs">
+                    <option selected>Jorge Gutiérrez</option>
+                    <option>Roberto Díaz</option>
+                  </select>
+                </td>
+                <td class="py-2.5 px-3 text-center">
+                  <span class="bg-slate-100 text-slate-700 text-[10px] font-bold px-2 py-0.5 rounded">Ingreso Jueves</span>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- Resumen del Pareto de Gastos de Pañol -->
+      <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm">
+          <div class="flex items-center justify-between mb-3">
+            <h3 class="text-sm font-bold text-slate-800">Curva de Pareto de Repuestos (Gasto: USD 235K)</h3>
+            <span class="text-xs bg-emerald-50 text-emerald-700 px-2 py-0.5 rounded font-bold border border-emerald-200">Ley 80 / 20</span>
+          </div>
+          <div class="space-y-2.5 text-xs">
+            <div>
+              <div class="flex justify-between mb-1">
+                <span>1. Motor JD Mod 6068Tj32 (Reparación Mayor)</span>
+                <strong class="text-slate-800">USD 12.500</strong>
+              </div>
+              <div class="w-full bg-slate-100 h-2 rounded-full overflow-hidden">
+                <div class="bg-slate-500 h-full rounded-full" style="width: 100%"></div>
+              </div>
+            </div>
+            <div>
+              <div class="flex justify-between mb-1">
+                <span>2. Embrague Re258870 (5 mov.)</span>
+                <strong class="text-slate-800">USD 10.418</strong>
+              </div>
+              <div class="w-full bg-slate-100 h-2 rounded-full overflow-hidden">
+                <div class="bg-slate-400 h-full rounded-full" style="width: 83%"></div>
+              </div>
+            </div>
+            <div>
+              <div class="flex justify-between mb-1 text-emerald-700 font-semibold">
+                <span>3. 🛢️ Aceite Lubricante 15W40 (Kit Service)</span>
+                <strong>USD 9.108</strong>
+              </div>
+              <div class="w-full bg-slate-100 h-2 rounded-full overflow-hidden">
+                <div class="bg-emerald-600 h-full rounded-full" style="width: 73%"></div>
+              </div>
+            </div>
+            <div>
+              <div class="flex justify-between mb-1 text-emerald-700 font-semibold">
+                <span>4. 🛢️ Aceite Hidráulico TO-2 205L (Kit Service)</span>
+                <strong>USD 8.443</strong>
+              </div>
+              <div class="w-full bg-slate-100 h-2 rounded-full overflow-hidden">
+                <div class="bg-emerald-600 h-full rounded-full" style="width: 67%"></div>
+              </div>
+            </div>
+          </div>
+          <p class="text-[11px] text-slate-500 mt-3 pt-2 border-t border-slate-100">
+            Los lubricantes estándar de preventivos acumulan <strong>USD 17.551</strong>. Controlarlos científicamente evita quiebres en toda la flota.
+          </p>
+        </div>
+
+        <!-- Matriz Comparativa para la Defensa Académica -->
+        <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm">
+          <h3 class="text-sm font-bold text-slate-800 mb-3">Valor Agregado del Prototipo: As-Is vs. To-Be</h3>
+          <div class="space-y-3 text-xs">
+            <div class="p-3 rounded-xl bg-red-50/70 border border-red-200">
+              <strong class="text-red-700 block mb-0.5">❌ Proceso Anterior (As-Is / Manual)</strong>
+              <p class="text-slate-600">
+                Planilla manual en Excel solo los viernes. Desconexión de hasta 120 horas en zafra. Repuestos sin stock mínimo; el mecánico pide en pañol y descubre el faltante.
+              </p>
+            </div>
+            <div class="p-3 rounded-xl bg-emerald-50/70 border border-emerald-200">
+              <strong class="text-emerald-700 block mb-0.5">✅ Proceso con Sistema (To-Be / Proactivo)</strong>
+              <p class="text-slate-700">
+                Captura al cargar gasoil, proyección continua en días, reserva virtual de kits BOM y disparo automático de pedidos Ariba a 21 días.
+              </p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- FOOTER -->
+  <footer class="bg-white border-t border-slate-200 py-3 text-center text-xs text-slate-400 mt-auto">
+    <div class="max-w-7xl mx-auto px-4 flex flex-col sm:flex-row justify-between items-center space-y-1 sm:space-y-0">
+      <span>🚜 Ingenio Ledesma — Caso Taller Mecánico Frutas y Jugo</span>
+      <span>Trabajo de Campo UNJu 2026 • Prototipo Funcional de 4 Vistas</span>
+    </div>
+  </footer>
+
+  <!-- ========================================================================= -->
+  <!-- JAVASCRIPT: LÓGICA REACTIVA MULTIRROL Y SINCRONIZACIÓN DE DATOS          -->
+  <!-- ========================================================================= -->
+  <script>
+    // DATASET GLOBAL DE MAQUINARIAS
+    let flota = [
+      { id: "T-1043", modelo: "John Deere 5075E", tipo: "Tractor", quinta: "Quinta Sur", horometro: 4867, ultimoService: 4200, ciclo: 350, tasaDiaria: 10.5, fechaLectura: "2026-11-06" },
+      { id: "T-1012", modelo: "Massey Ferguson 4292", tipo: "Tractor", quinta: "Quinta Norte", horometro: 3832, ultimoService: 3500, ciclo: 350, tasaDiaria: 9.0, fechaLectura: "2026-11-06" },
+      { id: "TP-04", modelo: "Jacto Arbus 2000", tipo: "Turbopulverizador", quinta: "Citrus Alta", horometro: 2680, ultimoService: 2450, ciclo: 350, tasaDiaria: 20.0, fechaLectura: "2026-11-06" },
+      { id: "T-1015", modelo: "John Deere 5705", tipo: "Tractor", quinta: "Quinta Norte", horometro: 6150, ultimoService: 5800, ciclo: 350, tasaDiaria: 8.5, fechaLectura: "2026-11-05" },
+      { id: "T-1088", modelo: "New Holland TT4.75", tipo: "Tractor", quinta: "Citrus Alta", horometro: 1420, ultimoService: 1050, ciclo: 350, tasaDiaria: 11.0, fechaLectura: "2026-11-06" },
+      { id: "TP-09", modelo: "Jacto Arbus 2000", tipo: "Turbopulverizador", quinta: "Quinta Sur", horometro: 4180, ultimoService: 3850, ciclo: 350, tasaDiaria: 19.5, fechaLectura: "2026-11-06" },
+      { id: "T-1020", modelo: "Massey Ferguson 4275", tipo: "Tractor", quinta: "Quinta Norte", horometro: 5210, ultimoService: 4900, ciclo: 350, tasaDiaria: 7.5, fechaLectura: "2026-11-04" },
+      { id: "T-1033", modelo: "John Deere 5085E", tipo: "Tractor", quinta: "Quinta Sur", horometro: 2950, ultimoService: 2800, ciclo: 350, tasaDiaria: 9.2, fechaLectura: "2026-11-05" },
+      { id: "T-1045", modelo: "John Deere 5075E", tipo: "Tractor", quinta: "Citrus Alta", horometro: 3410, ultimoService: 3150, ciclo: 350, tasaDiaria: 8.0, fechaLectura: "2026-11-05" },
+      { id: "T-1050", modelo: "Valtra A750", tipo: "Tractor", quinta: "Quinta Norte", horometro: 4400, ultimoService: 4200, ciclo: 350, tasaDiaria: 8.5, fechaLectura: "2026-11-04" }
+    ];
+
+    // CATÁLOGO DE REPUESTOS DEL PAÑOL
+    let repuestos = [
+      { codigoSAP: "1008452", descripcion: "Aceite Lubricante 15W40 Motor", categoria: "Kit T1/T2/T4", stockFisico: 420, unidad: "Litros", unidadCompra: "Tambores 205L", reservaBOM: 380, leadTimeDias: 14, consumoDiario: 22, stockSeguridad: 150 },
+      { codigoSAP: "1009120", descripcion: "Aceite Hidráulico TO-2", categoria: "Kit T4 Mayor", stockFisico: 615, unidad: "Litros", unidadCompra: "Tambores 205L", reservaBOM: 450, leadTimeDias: 21, consumoDiario: 15, stockSeguridad: 200 },
+      { codigoSAP: "2004123", descripcion: "Filtro de Aceite Motor JD", categoria: "Kit T1 Menor", stockFisico: 14, unidad: "Unidades", unidadCompra: "Cajas x12", reservaBOM: 12, leadTimeDias: 10, consumoDiario: 1.5, stockSeguridad: 6 },
+      { codigoSAP: "2005512", descripcion: "Filtro Combustible Primario", categoria: "Kit T2 Medio", stockFisico: 11, unidad: "Unidades", unidadCompra: "Cajas x10", reservaBOM: 8, leadTimeDias: 14, consumoDiario: 1.0, stockSeguridad: 5 },
+      { codigoSAP: "2006780", descripcion: "Filtro Aire Secundario", categoria: "Kit T2 Medio", stockFisico: 8, unidad: "Unidades", unidadCompra: "Unidades", reservaBOM: 6, leadTimeDias: 14, consumoDiario: 0.8, stockSeguridad: 4 },
+      { codigoSAP: "4001290", descripcion: "Bomba Inyectora Bosch 4cil", categoria: "Correctivo Crítico", stockFisico: 1, unidad: "Unidades", unidadCompra: "Unidades", reservaBOM: 0, leadTimeDias: 60, consumoDiario: 0.05, stockSeguridad: 1 },
+      { codigoSAP: "3004561", descripcion: "Arandela Cárter de Cobre", categoria: "Kit T1 Menor", stockFisico: 45, unidad: "Unidades", unidadCompra: "Pack x50", reservaBOM: 15, leadTimeDias: 7, consumoDiario: 2.0, stockSeguridad: 15 }
+    ];
+
+    let historialCargas = [
+      { fecha: "06/Nov 14:30", equipo: "T-1043", litros: "90 L", horometro: "4.867 h", chofer: "J. Gómez" },
+      { fecha: "06/Nov 11:15", equipo: "TP-04", litros: "120 L", horometro: "2.680 h", chofer: "M. Torres" },
+      { fecha: "05/Nov 16:40", equipo: "T-1012", litros: "80 L", horometro: "3.832 h", chofer: "R. Mamani" }
+    ];
+
+    // CÁLCULO DE ESTADO
+    function calcularEstadoEquipo(eq) {
+      let horasDesdeService = eq.horometro - eq.ultimoService;
+      let horasRestantes = eq.ciclo - horasDesdeService;
+      let diasRestantes = horasRestantes > 0 ? (horasRestantes / (eq.tasaDiaria || 8.0)).toFixed(1) : 0;
+
+      let color = "VERDE";
+      let texto = "Al Día";
+
+      if (horasRestantes <= 0) {
+        color = "ROJO";
+        texto = `Vencido (+${Math.abs(horasRestantes)} h)`;
+      } else if (diasRestantes <= 2 || horasRestantes <= 20) {
+        color = "ROJO";
+        texto = `Crítico (${horasRestantes} h)`;
+      } else if (horasRestantes <= 50 || diasRestantes <= 6) {
+        color = "AMARILLO";
+        texto = `Próximo (${horasRestantes} h)`;
+      } else {
+        color = "VERDE";
+        texto = `Normal (${horasRestantes} h)`;
+      }
+
+      return { color, texto, horasRestantes, diasRestantes, horasDesdeService };
+    }
+
+    // ACTUALIZAR PESTAÑA 1 (EMPLEADOS)
+    function inicializarVistaEmpleado() {
+      const select = document.getElementById("empleado-select-equipo");
+      select.innerHTML = "";
+      flota.forEach(eq => {
+        let opt = document.createElement("option");
+        opt.value = eq.id;
+        opt.innerText = `${eq.id} — ${eq.modelo} (${eq.quinta})`;
+        select.appendChild(opt);
+      });
+      document.getElementById("emp-form-fecha").value = new Date().toISOString().split('T')[0];
+      actualizarVistaEmpleado();
+      renderizarHistorialCargas();
+    }
+
+    function actualizarVistaEmpleado() {
+      const id = document.getElementById("empleado-select-equipo").value;
+      const eq = flota.find(e => e.id === id);
+      if (!eq) return;
+
+      const est = calcularEstadoEquipo(eq);
+      document.getElementById("emp-modelo").innerText = eq.modelo;
+      document.getElementById("emp-quinta").innerText = eq.quinta;
+      document.getElementById("emp-horometro").innerText = `${eq.horometro} h`;
+      document.getElementById("emp-tasa").innerText = `${eq.tasaDiaria} h/día`;
+      document.getElementById("emp-ultimo").innerText = `T1 a las ${eq.ultimoService} h`;
+
+      // Formulario
+      document.getElementById("emp-form-equipo").value = `${eq.id} (${eq.modelo})`;
+      document.getElementById("emp-form-anterior").value = `${eq.horometro} h`;
+      document.getElementById("emp-form-nuevo").value = eq.horometro + 20;
+
+      // Badge y Caja
+      const badge = document.getElementById("empleado-badge-estado");
+      const box = document.getElementById("emp-alerta-box");
+
+      if (est.color === "ROJO") {
+        badge.className = "px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-red-100 text-red-800 border border-red-200 badge-pulse";
+        badge.innerText = `🔴 ${est.texto.toUpperCase()}`;
+        box.className = "mt-4 p-3 rounded-xl bg-red-50 border border-red-200 text-xs text-red-800";
+        box.innerHTML = `<strong class="block font-bold mb-0.5">⚠️ Mantenimiento Crítico / Vencido</strong>
+          El equipo acumula ${est.horasDesdeService} h desde su último service (límite: 350 h). Avisar a Leonel antes de salir al campo.`;
+      } else if (est.color === "AMARILLO") {
+        badge.className = "px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-amber-100 text-amber-800 border border-amber-200";
+        badge.innerText = `🟡 SERVICE PRÓXIMO`;
+        box.className = "mt-4 p-3 rounded-xl bg-amber-50 border border-amber-200 text-xs text-amber-800";
+        box.innerHTML = `<strong class="block font-bold mb-0.5">⏳ Service Próximo en ~${est.diasRestantes} Días</strong>
+          Quedan ${est.horasRestantes} h de trabajo. Pañol ya apartó el Kit BOM correspondiente.`;
+      } else {
+        badge.className = "px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-emerald-100 text-emerald-800 border border-emerald-200";
+        badge.innerText = `🟢 EQUIPO AL DÍA`;
+        box.className = "mt-4 p-3 rounded-xl bg-emerald-50 border border-emerald-200 text-xs text-emerald-800";
+        box.innerHTML = `<strong class="block font-bold mb-0.5">✅ Tractor Habilitado</strong>
+          Margen seguro de ${est.horasRestantes} horas de motor disponibles para cosecha.`;
+      }
+    }
+
+    function registrarCargaEmpleado(e) {
+      e.preventDefault();
+      const id = document.getElementById("empleado-select-equipo").value;
+      const nuevoHorometro = parseFloat(document.getElementById("emp-form-nuevo").value);
+      const litros = document.getElementById("emp-form-litros").value;
+      const chofer = document.getElementById("emp-form-chofer").value;
+
+      const eq = flota.find(e => e.id === id);
+      if (eq) {
+        eq.horometro = nuevoHorometro;
+        historialCargas.unshift({
+          fecha: "Hoy " + new Date().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'}),
+          equipo: eq.id,
+          litros: `${litros} L`,
+          horometro: `${nuevoHorometro} h`,
+          chofer: chofer.split(' ')[0]
+        });
+
+        actualizarVistaEmpleado();
+        renderizarHistorialCargas();
+        renderizarTablaRepuestos();
+        alert(`✅ Carga registrada con éxito para ${eq.id}.\nHorómetro actualizado a ${nuevoHorometro} h.\nDatos sincronizados con Pañol y Jefatura.`);
+      }
+    }
+
+    function renderizarHistorialCargas() {
+      const cont = document.getElementById("emp-historial-cargas");
+      cont.innerHTML = "";
+      historialCargas.slice(0, 3).forEach(h => {
+        const div = document.createElement("div");
+        div.className = "flex justify-between items-center bg-slate-50 p-2 rounded border border-slate-200";
+        div.innerHTML = `
+          <span><strong>${h.equipo}</strong> • ${h.litros} gasoil</span>
+          <span class="font-mono text-slate-700">${h.horometro}</span>
+          <span class="text-[10px] text-slate-400">${h.fecha} (${h.chofer})</span>
+        `;
+        cont.appendChild(div);
+      });
+    }
+
+    // ACTUALIZAR PESTAÑA 2 (PAÑOL)
+    function renderizarTablaRepuestos() {
+      const tbody = document.getElementById("tabla-repuestos-body");
+      tbody.innerHTML = "";
+      let countQuiebres = 0;
+
+      repuestos.forEach(rep => {
+        let pr = Math.ceil((rep.consumoDiario * rep.leadTimeDias) + rep.stockSeguridad);
+        let disponible = rep.stockFisico - rep.reservaBOM;
+        let esQuiebre = disponible <= rep.stockSeguridad;
+        let esReorden = disponible <= pr;
+
+        let estadoColor = "bg-emerald-100 text-emerald-800 border-emerald-200";
+        let estadoTxt = "🟢 Normal";
+        let compraSugerida = "0";
+
+        if (esQuiebre) {
+          estadoColor = "bg-red-100 text-red-800 border-red-200 font-bold badge-pulse";
+          estadoTxt = "🔴 Quiebre Invisible";
+          countQuiebres++;
+          let cant = Math.ceil((pr - disponible) * 1.2);
+          compraSugerida = `+${cant} ${rep.unidad}`;
+          if (rep.unidad === "Litros") {
+            let tambores = Math.ceil(cant / 205);
+            compraSugerida += ` (${tambores} Tambores)`;
+          }
+        } else if (esReorden) {
+          estadoColor = "bg-amber-100 text-amber-800 border-amber-200 font-semibold";
+          estadoTxt = "🟡 Punto Reposición";
+          let cant = Math.ceil(pr - disponible);
+          compraSugerida = `+${cant} ${rep.unidad}`;
+        }
+
+        const tr = document.createElement("tr");
+        tr.className = "hover:bg-slate-50 transition border-b border-slate-100";
+        tr.innerHTML = `
+          <td class="py-2.5 px-4 font-mono font-bold text-slate-800">${rep.codigoSAP}</td>
+          <td class="py-2.5 px-4 font-medium text-slate-900">${rep.descripcion}</td>
+          <td class="py-2.5 px-4 text-slate-500">${rep.categoria}</td>
+          <td class="py-2.5 px-4 font-mono font-bold text-slate-800">${rep.stockFisico} <span class="text-[10px] text-slate-400 font-normal">${rep.unidad}</span></td>
+          <td class="py-2.5 px-4 font-mono text-amber-700 font-semibold">-${rep.reservaBOM} ${rep.unidad}</td>
+          <td class="py-2.5 px-4 font-mono font-bold ${esQuiebre ? 'text-red-600' : 'text-slate-800'}">${disponible} ${rep.unidad}</td>
+          <td class="py-2.5 px-4 font-mono text-slate-600">${pr} ${rep.unidad}</td>
+          <td class="py-2.5 px-4 text-slate-600">${rep.leadTimeDias} días</td>
+          <td class="py-2.5 px-4">
+            <span class="inline-block px-2 py-0.5 rounded text-[11px] border ${estadoColor}">${estadoTxt}</span>
+          </td>
+          <td class="py-2.5 px-4 text-right font-mono font-bold text-emerald-700">${compraSugerida}</td>
+        `;
+        tbody.appendChild(tr);
+      });
+
+      document.getElementById("panol-count-quiebres").innerText = `${countQuiebres} Insumos`;
+      document.getElementById("header-criticos").innerText = `${countQuiebres + 2} Críticos`;
+    }
+
+    function descargarCSVAriba() {
+      let csvContent = "data:text/csv;charset=utf-8,";
+      csvContent += "Codigo_SAP,Descripcion_Material,Cantidad_Sugerida,Unidad_Medida,Centro_Costo,Lead_Time_Dias,Fecha_Requerida_Ariba,Prioridad\n";
+
+      repuestos.forEach(rep => {
+        let pr = Math.ceil((rep.consumoDiario * rep.leadTimeDias) + rep.stockSeguridad);
+        let disponible = rep.stockFisico - rep.reservaBOM;
+        if (disponible <= pr) {
+          let cant = Math.ceil(pr - disponible);
+          let fechaReq = new Date();
+          fechaReq.setDate(fechaReq.getDate() + 15);
+          let fechaStr = fechaReq.toISOString().split('T')[0];
+          let prioridad = disponible <= rep.stockSeguridad ? "ALTA_QUIEBRE" : "MEDIA_REPOSICION";
+          csvContent += `${rep.codigoSAP},"${rep.descripcion}",${cant},${rep.unidad},CC-TALLER-FRUTAS,${rep.leadTimeDias},${fechaStr},${prioridad}\n`;
+        }
+      });
+
+      const encodedUri = encodeURI(csvContent);
+      const link = document.createElement("a");
+      link.setAttribute("href", encodedUri);
+      link.setAttribute("download", `solicitud_compra_ariba_ledesma_${new Date().toISOString().split('T')[0]}.csv`);
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+    }
+
+    // PESTAÑA 3: WHATSAPP
+    function simularNuevaAlertaWhatsApp() {
+      const cont = document.getElementById("chat-mensajes");
+      const hora = new Date().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
+      const nuevoMsg = document.createElement("div");
+      nuevoMsg.className = "bg-white p-3 rounded-lg rounded-tl-none shadow-sm max-w-[92%] border-l-4 border-amber-500 animate-bounce";
+      nuevoMsg.innerHTML = `
+        <div class="flex items-center space-x-1 text-amber-700 font-bold text-[11px] mb-1">
+          <span>🔔</span>
+          <span>NUEVA LECTURA DE CAMPO REGISTRADA</span>
+        </div>
+        <p class="text-slate-800 mb-1 leading-relaxed">
+          <strong>Aviso a Leonel:</strong> Se registró combustible para <strong>T-1012</strong>. Horómetro actual: 3.845 h.
+        </p>
+        <p class="text-slate-600 text-[11px]">
+          Margen restante: <strong>5 horas</strong> para Service T1. Se asignó automáticamente en cola de ingreso para mañana.
+        </p>
+        <span class="text-[9px] text-slate-400 block text-right mt-1">${hora} ✓✓</span>
+      `;
+      cont.appendChild(nuevoMsg);
+      cont.scrollTop = cont.scrollHeight;
+      setTimeout(() => { nuevoMsg.classList.remove('animate-bounce'); }, 1000);
+    }
+
+    // CAMBIO DE PESTAÑAS
+    function cambiarTab(tabId) {
+      ["tab-empleados", "tab-panol", "tab-whatsapp", "tab-gerencial"].forEach(id => {
+        document.getElementById(id).classList.add("hidden");
+        const btn = document.getElementById(`btn-${id}`);
+        btn.className = "px-3.5 py-2 rounded-lg transition flex items-center space-x-2 text-emerald-200 hover:text-white hover:bg-white/10";
+      });
+
+      document.getElementById(tabId).classList.remove("hidden");
+      const activeBtn = document.getElementById(`btn-${tabId}`);
+      activeBtn.className = "px-3.5 py-2 rounded-lg transition flex items-center space-x-2 bg-emerald-600 text-white shadow-sm";
+    }
+
+    // INICIALIZACIÓN
+    window.onload = function() {
+      inicializarVistaEmpleado();
+      renderizarTablaRepuestos();
+    };
+  </script>
+</body>
+</html>
